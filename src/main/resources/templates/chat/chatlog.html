@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>聊天记录</title>
+    <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link th:href="@{/layim/dist/css/layui.css}" rel="stylesheet">
+    <style>
+        body .layim-chat-main {
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layim-chat-main">
+    <ul id="LAY_view"></ul>
+</div>
+
+<div id="LAY_page" style="margin: 0 10px;"></div>
+
+
+<textarea title="消息模版" id="LAY_tpl" style="display:none;">
+{{# layui.each(d.data, function(index, item){
+  if(item.id == parent.layui.layim.cache().mine.id){ }}
+    <li class="layim-chat-mine"><div class="layim-chat-user"><img src="{{ item.avatar }}"><cite><i>{{ layui.data.date(item.timestamp) }}</i>{{ item.username }}</cite></div><div
+            class="layim-chat-text">{{ layui.layim.content(item.content) }}</div></li>
+  {{# } else { }}
+    <li><div class="layim-chat-user"><img src="{{ item.avatar }}"><cite>{{ item.username }}<i>{{ layui.data.date(item.timestamp) }}</i></cite></div><div
+            class="layim-chat-text">{{ layui.layim.content(item.content) }}</div></li>
+  {{# }
+}); }}
+</textarea>
+
+
+<!--加版本号 避免多文件冲突-->
+<script src="/layim/dist/layui.js?v=1"></script>
+<script>
+    layui.use(['layim', 'laypage'], function () {
+        var layim = layui.layim
+            , layer = layui.layer
+            , laytpl = layui.laytpl
+            , $ = layui.jquery
+            , laypage = layui.laypage;
+
+
+        //开始请求聊天记录
+        var param = location.search //获得URL参数。该窗口url会携带会话id和type，他们是你请求聊天记录的重要凭据
+        var url = "/chat/selectChatlogByFriend" + param+"&pageSize=10&pageNum=1";
+        $.post(url, function (res) {
+            var html = laytpl(LAY_tpl.value).render({
+                data: res.rows
+            });
+            $('#LAY_view').html(html);
+            laypage.render({
+                elem: 'LAY_page'
+                ,count: res.total
+                ,limit: 50
+                ,prev: '<i class="fa fa-chevron-left"></i>'
+                ,next: '<i class="fa fa-chevron-right"></i>'
+                ,curr: 1
+                ,groups:5
+                ,layout: ['prev', 'page', 'next','limit','count']
+                ,jump: function(obj, first){
+                    //obj包含了当前分页的所有参数，比如：
+                    //首次不执行
+                    if(!first){
+                        var jumpUrl = "/chat/selectChatlogByFriend" + param+"&pageSize="+obj.limit+"&pageNum="+obj.curr;
+                        $.post(jumpUrl, function (res) {
+                            var html = laytpl(LAY_tpl.value).render({
+                                data: res.rows
+                            });
+                            $('#LAY_view').html(html);
+                        })
+                    }
+                }
+            });
+        })
+
+
+
+    });
+</script>
+</body>
+</html>

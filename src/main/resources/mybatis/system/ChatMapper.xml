@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zh.project.system.chat.mapper.ChatMapper">
+
+    <resultMap type="InitUser" id="InitUserResult">
+        <result property="avatar" column="avatar"/>
+        <result property="id" column="login_name"/>
+        <result property="username" column="user_name"/>
+        <result property="sign" column="remark"/>
+    </resultMap>
+
+    <resultMap type="ChatApply" id="ChatApplyResult">
+        <result property="fromId" column="from_id"/>
+        <result property="toId" column="to_id"/>
+        <result property="avatar" column="avatar"/>
+        <result property="remark" column="remark"/>
+        <result property="sign" column="sign"/>
+        <result property="content" column="content"/>
+        <result property="type" column="type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <delete id="deleteFriend">
+        delete from  chat_friend
+        where (user_id = #{loginName} and friend_id=#{userId}) or
+        (user_id = #{userId} and friend_id=#{loginName})
+    </delete>
+
+
+    <select id="getInitFriendGroup" resultMap="InitUserResult">
+         select avatar,login_name,user_name,remark from  sys_user
+          where login_name in
+          (select friend_id from chat_friend where user_id=#{userId})
+    </select>
+
+    <select id="selectFirstApply" parameterType="ChatApply" resultType="int">
+         select count(*) from chat_apply where from_id = #{fromId} and to_id = #{toId} and type = 0
+    </select>
+
+    <sql id="ChatApplyVo">
+        insert into chat_apply (
+        <if test="fromId != null and fromId != ''">from_id,</if>
+        <if test="toId != null and toId != ''">to_id,</if>
+        <if test="avatar != null and avatar != ''">avatar,</if>
+        <if test="sign != null and sign != ''">sign,</if>
+        <if test="content != null and content != ''">content,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        <if test="type != null">type,</if>
+        create_time
+        )values(
+        <if test="fromId != null and fromId != ''">#{fromId},</if>
+        <if test="toId != null and toId != ''">#{toId},</if>
+        <if test="avatar != null and avatar != ''">#{avatar},</if>
+        <if test="sign != null and sign != ''">#{sign},</if>
+        <if test="content != null and content != ''">#{content},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        <if test="type != null">#{type},</if>
+        sysdate()
+        )
+
+    </sql>
+
+
+    <insert id="friendApply" parameterType="ChatApply">
+        <include refid="ChatApplyVo"></include>
+    </insert>
+
+    <insert id="addDeleteFriendApply" parameterType="ChatApply">
+        <include refid="ChatApplyVo"></include>
+    </insert>
+
+    <insert id="refuseFriend" parameterType="ChatApply">
+        <include refid="ChatApplyVo"></include>
+    </insert>
+
+    <insert id="agreeFriend" parameterType="ChatApply">
+        <include refid="ChatApplyVo"></include>
+    </insert>
+
+    <select id="getMembers" resultMap="InitUserResult">
+        select avatar,login_name,user_name,remark from sys_user
+    </select>
+
+    <select id="selectMsgBoxList" resultMap="ChatApplyResult">
+        select * from  chat_apply
+        where to_id = #{loginName} and type not in (1)
+        order by create_time desc
+    </select>
+
+    <select id="selectFriendByFriendId" resultType="int">
+        select count(*) from chat_friend
+        where user_id = #{userId} and friend_id = #{friendId}
+    </select>
+
+    <select id="selectUnReadMsgBoxList" resultMap="ChatApplyResult">
+         select * from  chat_apply
+        where to_id = #{loginName} and type = 0
+    </select>
+
+
+    <update id="updateChatApplyType" parameterType="ChatApply">
+        update chat_apply set type = 1 where (from_id = #{toId} and to_id = #{fromId}) or(from_id = #{fromId} and to_id = #{toId}) and type = 0
+    </update>
+
+    <insert id="addFriend" parameterType="ChatApply">
+            insert into chat_friend (user_id ,friend_id,create_time)
+            values (#{fromId},#{toId},sysdate()),(#{toId},#{fromId},sysdate())
+    </insert>
+
+</mapper>
