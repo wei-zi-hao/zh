@@ -68,6 +68,17 @@ public class MsgUtils {
         return msg;
     }
 
+    //图片信息消息
+    public static Msg getImageInfoMsg(String content){
+        Msg msg = new Msg();
+        msg.setId("imgageDiscern");
+        msg.setTo("图片识别");
+        msg.setToAvatar("/img/chat/girl.jpg");
+        msg.setState(1);
+        msg.setContent(content);
+        return msg;
+    }
+
     //胡歌智能回复信息体
     public static Msg getHgMsg(JSONObject mine){
         Msg hgMsg = new Msg();

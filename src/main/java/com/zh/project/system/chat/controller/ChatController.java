@@ -7,6 +7,8 @@ import com.zh.common.utils.ShiroUtils;
 import com.zh.common.utils.chat.MsgUtils;
 import com.zh.common.utils.file.FileUploadUtils;
 import com.zh.framework.config.RuoYiConfig;
+import com.zh.framework.manager.AsyncManager;
+import com.zh.framework.manager.factory.AsyncFactory;
 import com.zh.framework.web.controller.BaseController;
 import com.zh.framework.web.damain.AjaxResult;
 import com.zh.framework.web.page.TableDataInfo;
@@ -21,7 +23,6 @@ import com.zh.project.system.user.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
@@ -47,8 +48,6 @@ public class ChatController extends BaseController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
 
     private String prefix = "chat";
-    @Autowired
-    private RedisTemplate<String,String> redisTemplate;
 
     @Autowired
     private ChatLogMapper chatLogMapper;
@@ -98,16 +97,20 @@ public class ChatController extends BaseController {
     @ResponseBody
     public FileResult uploadImg(MultipartFile file) throws Exception {
         try {
+            String loginName = ShiroUtils.getLoginName();
             // 上传路径
             String filePath = RuoYiConfig.getUploadPath();
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
-
+            //本地路径
+            String nativePath = RuoYiConfig.getProfile()+fileName.substring(8);
+            //调用图片识别并推送信息  延迟执行
+            AsyncManager.me().execute(AsyncFactory.imageDesc(fileName,nativePath,loginName));
             return FileResult.success(fileName);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return FileResult.error("文件超过限制大小。");
+            return FileResult.error("文件超出限制。");
         }
     }
 
@@ -164,8 +167,6 @@ public class ChatController extends BaseController {
     @ResponseBody
     @Transactional
     public List<ChatLog> getUnReadMessageUrl() {
-        System.out.println(redisTemplate.hasKey("name"));
-        redisTemplate.opsForValue().set("s","aaa");
         String loginName = ShiroUtils.getLoginName();
         //查询完 修改已读状态
         List<ChatLog> chatLogs = chatLogMapper.getUnReadMessageUrl(loginName);

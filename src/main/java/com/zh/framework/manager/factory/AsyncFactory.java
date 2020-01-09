@@ -3,6 +3,7 @@ package com.zh.framework.manager.factory;
 
 import com.zh.common.constant.Constants;
 import com.zh.common.utils.*;
+import com.zh.common.utils.chat.BaiDuImageUtils;
 import com.zh.project.monitor.logininfor.domain.Logininfor;
 import com.zh.project.monitor.logininfor.service.LogininforServiceImpl;
 import com.zh.project.monitor.online.domain.OnlineSession;
@@ -18,6 +19,7 @@ import eu.bitwalker.useragentutils.UserAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.TimerTask;
 
 /**
@@ -162,7 +164,25 @@ public class AsyncFactory
             }
         };
     }
-
+    /**
+     * 记录聊天记录
+     * @return 任务task
+     */
+    public static TimerTask imageDesc(String resourePath,String filePath,String loginName)
+    {
+        return new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    BaiDuImageUtils.getImageInfo(resourePath,filePath,loginName);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+    }
     /**
      * 记录群组聊天记录
      * @return 任务task
