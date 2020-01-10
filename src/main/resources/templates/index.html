@@ -51,6 +51,7 @@
                         <li class="active"><a class="menuItem" th:href="@{/system/main}">首页</a></li>
 						<li><a title="来一起聊天吧！" href="javascript:void(0)" data-id="chatRoom" onclick="chatRoom()">在线聊天室</a></li>
 						<li><a title="可以搜索歌曲哦！" href="javascript:void(0)" data-id="music" onclick="music()">音乐搜索器</a></li>
+						<li><a title="我爱斗图！" href="javascript:void(0)" data-id="doutu" onclick="doutu()">斗图</a></li>
                     </ul>
                 </li>
                 <li th:each="menu : ${menus}">
@@ -180,7 +181,7 @@
 
 					<li><a title="来一起聊天吧！" href="javascript:void(0)" data-id="chatRoom" onclick="chatRoom()"><i class="fa fa-weixin"></i> 在线聊天室</a></li>
 					<li><a title="可以搜索歌曲哦！" href="javascript:void(0)" data-id="music" onclick="music()"><i class="fa fa-send"></i> 音乐搜索器</a></li>
-
+					<li><a title="我爱斗图！" href="javascript:void(0)" data-id="doutu" onclick="doutu()"><i class="fa fa-fire"></i> 斗图</a></li>
 					<li><a title="大屏的，好喝！" href="javascript:void(0)" id="fullScreen"><i class="fa fa-arrows-alt"></i> 全屏显示</a></li>
                     <li class="dropdown user-menu">
 						<a href="javascript:void(0)" class="dropdown-toggle" data-hover="dropdown">
@@ -275,6 +276,10 @@ var ctx = [[@{/}]];
 	/* 音乐搜索器 */
 	function music() {
 		$.modal.openTab("音乐搜索器", "http://www.musictool.top/",true);
+	}
+	/* 斗图 */
+	function doutu() {
+		$.modal.openTab("斗图", "https://www.52doutu.cn/",true);
 	}
 	/* 在线聊天室 */
 	function chatRoom() {
