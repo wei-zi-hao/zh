@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class AddressUtils {
     private static final Logger log = LoggerFactory.getLogger(AddressUtils.class);
 
-    public static final String IP_URL = "http://ip.taobao.com/service/getIpInfo.php";
+    public static final String IP_URL = "http://ip-api.com/json/";
 
     public static String getRealAddressByIP(String ip) {
         String address = "XX XX";
@@ -22,15 +22,14 @@ public class AddressUtils {
             return "内网IP";
         }
         if (RuoYiConfig.isAddressEnabled()) {
-            String rspStr = HttpUtils.sendPost(IP_URL, "ip=" + ip);
+            String rspStr = HttpUtils.sendPost(IP_URL+ip, "lang=zh-CN");
             if (StringUtils.isEmpty(rspStr)) {
                 log.error("获取地理位置异常 {}", ip);
                 return address;
             }
             JSONObject obj = JSONObject.parseObject(rspStr);
-            JSONObject data = obj.getObject("data", JSONObject.class);
-            String region = data.getString("region");
-            String city = data.getString("city");
+            String region = obj.getString("regionName");
+            String city = obj.getString("city");
             address = region + " " + city;
         }
         return address;
